@@ -7,7 +7,7 @@ import userEvent from "@testing-library/user-event";
 import Bills from "../containers/Bills.js";
 import BillsUI from "../views/BillsUI.js";
 import { bills } from "../fixtures/bills.js";
-import { ROUTES_PATH } from "../constants/routes.js";
+import { ROUTES, ROUTES_PATH } from "../constants/routes.js";
 import { localStorageMock } from "../__mocks__/localStorage.js";
 
 import router from "../app/Router.js";
@@ -39,32 +39,55 @@ describe("Given I am connected as an employee", () => {
 			const datesSorted = [...dates].sort(antiChrono);
 			expect(dates).toEqual(datesSorted);
 		});
-	});
 
-	describe("When I click on icon eye", () => {
-		test("Then modal should open", () => {
-			const billsContainer = new Bills({
-				document,
-				onNavigate,
-				firestore: null,
-				bills,
-				localStorage: window.localStorage,
-			});
-
-			const modal = document.querySelector("#modaleFile");
-			const iconEye = screen.getAllByTestId("icon-eye");
-			const handleClickIconEye = jest.fn(billsContainer.handleClickIconEye);
-			iconEye.forEach((icon) => {
-				icon.addEventListener("click", () => {
-					handleClickIconEye(icon);
+		describe("When I click on icon eye", () => {
+			test("Then modal should open", () => {
+				const billsContainer = new Bills({
+					document,
+					onNavigate,
+					firestore: null,
+					bills,
+					localStorage: window.localStorage,
 				});
-			});
-			userEvent.click(iconEye[0]);
 
-			expect(handleClickIconEye).toHaveBeenCalled();
-			setTimeout(() => {
-				expect(modal).toHaveClass("show");
-			}, 50);
+				const modal = document.querySelector("#modaleFile");
+				const iconEye = screen.getAllByTestId("icon-eye");
+				const handleClickIconEye = jest.fn(billsContainer.handleClickIconEye);
+				iconEye.forEach((icon) => {
+					icon.addEventListener("click", () => {
+						handleClickIconEye(icon);
+					});
+				});
+				userEvent.click(iconEye[0]);
+
+				expect(handleClickIconEye).toHaveBeenCalled();
+				setTimeout(() => {
+					expect(modal).toHaveClass("show");
+				}, 50);
+			});
+		});
+
+		describe("When I click on 'New Bill' button", () => {
+			test("Then I should be redirect to the page", () => {
+				const onNavigate = (pathname) => {
+					document.body.innerHTML = ROUTES({ pathname });
+				};
+				const billsContainer = new Bills({
+					document,
+					onNavigate,
+					firestore: null,
+					bills,
+					localStorage: window.localStorage,
+				});
+
+				const buttonNewBill = screen.getByTestId("btn-new-bill");
+				const handleClickNewBill = jest.fn(billsContainer.handleClickNewBill());
+				buttonNewBill.addEventListener("click", handleClickNewBill);
+				userEvent.click(buttonNewBill);
+
+				expect(handleClickNewBill).toHaveBeenCalled();
+				expect(screen.getByText("Envoyer une note de frais")).toBeTruthy();
+			});
 		});
 	});
 });
