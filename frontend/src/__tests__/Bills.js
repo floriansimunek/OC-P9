@@ -9,6 +9,10 @@ import BillsUI from "../views/BillsUI.js";
 import { bills } from "../fixtures/bills.js";
 import { ROUTES, ROUTES_PATH } from "../constants/routes.js";
 import { localStorageMock } from "../__mocks__/localStorage.js";
+import { formatDate, formatStatus } from "../app/format.js";
+
+import mockStore from "../__mocks__/store.js";
+jest.mock("../app/Store", () => mockStore);
 
 import router from "../app/Router.js";
 
@@ -29,6 +33,8 @@ describe("Given I am connected as an employee", () => {
 			window.onNavigate(ROUTES_PATH.Bills);
 			await waitFor(() => screen.getByTestId("icon-window"));
 			const windowIcon = screen.getByTestId("icon-window");
+
+			//TODO: "toHaveClass()" not working
 			expect(windowIcon.classList.contains("active-icon")).toBe(true);
 		});
 
@@ -41,7 +47,7 @@ describe("Given I am connected as an employee", () => {
 		});
 
 		describe("When I click on icon eye", () => {
-			test("Then modal should open", () => {
+			test("Then modal should open", async () => {
 				const billsContainer = new Bills({
 					document,
 					onNavigate,
@@ -61,9 +67,9 @@ describe("Given I am connected as an employee", () => {
 				userEvent.click(iconEye[0]);
 
 				expect(handleClickIconEye).toHaveBeenCalled();
-				setTimeout(() => {
-					expect(modal).toHaveClass("show");
-				}, 50);
+				await new Promise((resolve) => setTimeout(resolve, 50));
+				//TODO: "toHaveClass()" not working
+				expect(modal.classList.contains("show")).toBe(true);
 			});
 		});
 
@@ -87,6 +93,22 @@ describe("Given I am connected as an employee", () => {
 
 				expect(handleClickNewBill).toHaveBeenCalled();
 				expect(screen.getByText("Envoyer une note de frais")).toBeTruthy();
+			});
+		});
+
+		describe("When I call the API", () => {
+			test("Then it should call getBills() & retrieve 4 bills from mocked store", async () => {
+				const billsContainer = new Bills({
+					document,
+					onNavigate,
+					store: mockStore,
+					localStorage: window.localStorage,
+				});
+
+				const getBills = jest.fn(() => billsContainer.getBills());
+				const result = await getBills();
+				expect(getBills).toHaveBeenCalled();
+				expect(result.length).toBe(4);
 			});
 		});
 	});
