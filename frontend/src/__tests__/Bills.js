@@ -145,7 +145,7 @@ describe("Given I am connected as an employee", () => {
 					store: corruptedBill,
 					localStorage: window.localStorage,
 				});
-				const result = await newBill.getBills();
+				await newBill.getBills();
 				expect(consoleSpy).toHaveBeenCalled();
 			});
 		});
