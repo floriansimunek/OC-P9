@@ -50,6 +50,27 @@ describe("Given I am connected as an employee", () => {
 			expect(handleChangeFile).toHaveBeenCalledTimes(2);
 		});
 
+		test("Then change file handler should display the error if the file format is not supported", () => {
+			const onNavigate = (pathname) => {
+				document.body.innerHTML = ROUTES({ pathname });
+			};
+			const newBill = new NewBill({
+				document,
+				onNavigate,
+				store: mockStore,
+				localStorage: window.localStorage,
+			});
+			const handleChangeFile = jest.fn(newBill.handleChangeFile);
+			const blob = new Blob([""], { type: "image/png" });
+			const file = new File([blob], "test.webp", { type: "webp" });
+			const input = screen.getByTestId("file");
+			const errorDiv = document.querySelector("#fileError");
+			input.addEventListener("change", handleChangeFile);
+			fireEvent.change(input, { target: { files: [file] } });
+			userEvent.upload(input, file);
+			expect(errorDiv.classList.contains("error")).toBe(true);
+		});
+
 		test("Then it should submit new bill when I fill correctly fields", async () => {
 			const onNavigate = (pathname) => {
 				document.body.innerHTML = ROUTES({ pathname });
